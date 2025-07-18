@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  communication-analyzer:
+    build: .
+    container_name: whatsapp-gmail-analyzer
+    volumes:
+      # Mount Google Drive files
+      - ./google-drive:/content/drive:ro
+      # Mount credentials (optional, for development)
+      - ./credentials:/app/credentials:ro
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    # For interactive mode (to handle Gmail auth prompts)
+    stdin_open: true
+    tty: true
+    # Restart policy
+    restart: unless-stopped
+    
+  # Optional: Add a web interface service later
+  # web-interface:
+  #   build: ./web
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - communication-analyzer 
