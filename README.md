@@ -1,237 +1,69 @@
-# 🏴‍☠️ WhatsApp & Gmail Communication Analyzer
+# WhatsApp & Gmail Communication Analyzer
 
-*By the grace of the Flying Spaghetti Monster, a production-ready communication analysis tool!* 🍝
+Analyzes WhatsApp chat exports and Gmail threads. Uploads WhatsApp analysis to Google Sheets and lists Gmail threads (e.g. threads you started without a reply, or where you were the last to reply). Uses Google APIs for Sheets and Gmail.
 
-## 📁 **Project Structure**
+## What you need
 
-```
-📦 WhatsApp Analyzer
-├── 🎯 main.py               # Production entry point
-├── 📦 src/                  # Source code directory
-│   ├── 🎯 core/             # Core application logic
-│   ├── 🔧 services/         # Business logic services
-│   ├── 🛠️ utils/            # Utility functions
-│   ├── 📊 models/           # Data models and schemas
-│   └── ⚙️ config/           # Configuration management
-├── 📚 docs/                 # Documentation
-├── 🔧 scripts/              # Deployment scripts
-├── 🧪 tests/                # Test files
-├── 📁 credentials/          # Google API credentials
-├── 📁 data/                 # WhatsApp chat files
-├── 📁 logs/                 # Application logs
-├── 🐳 Dockerfile            # Container definition
-├── 🐳 docker-compose.yml    # Docker orchestration
-├── 📦 requirements.txt      # Python dependencies
-└── 📖 README.md             # This file
-```
+- Python 3.9+
+- Google API credentials (service account for Sheets; OAuth or service account for Gmail)
+- A WhatsApp chat export file (text format)
+- Optional: Docker
 
-## 🚀 **Quick Start**
+## How to use
 
-### **1. Local Development**
+### 1. Configure environment
+
+Copy `env.production.example` to `.env` for production or Docker. For local development you can use `env.example` and adjust paths. Edit `.env` and set:
+
+- `CLIENT_SECRETS_PATH` — path to your Google service account JSON (for Sheets)
+- `AUTH_CLIENT_SECRET_PATH` — path to OAuth client secret JSON (for Gmail)
+- `WHATSAPP_FILE_PATH` — path to your WhatsApp chat export file
+- `TOKEN_PATH` — path where Gmail token will be stored (e.g. `./credentials/token.pickle`)
+
+Place your Google API credential files in `./credentials/` (or the paths you set in `.env`).
+
+### 2. Run with Docker
 
 ```bash
-# Clone and setup
-git clone <repository-url>
-cd whatsapp-analyzer
+docker-compose up --build
+```
 
-# Install dependencies
+To use the helper script:
+
+```bash
+./scripts/docker-run.sh
+```
+
+### 3. Run locally
+
+```bash
 pip install -r requirements.txt
-
-# Configure environment
-cp env.production.example .env
-# Edit .env with your settings
-
-# Add your files
-# - Place Google API credentials in ./credentials/
-# - Place WhatsApp chat file in ./data/
-
-# Run the application
 python main.py
 ```
 
-### **2. Docker Deployment (Recommended)**
+The app will read the WhatsApp file, run the analysis, upload results to a new Google Sheet, then authenticate with Gmail and print thread summaries. On failure it exits with code 1.
 
-```bash
-# Build and run with Docker
-docker-compose up --build
+### 4. Environment files
 
-# Or use the deployment script
-./scripts/deploy.sh
-```
+- **env.example** — development/local example (paths and placeholders).
+- **env.production.example** — production/Docker example; copy to `.env` and fill in credentials and paths.
 
-### **3. Cloud Deployment**
+## Project layout
 
-Choose your platform:
+- `main.py` — entry point; loads `.env` and calls the main workflow.
+- `src/core/main.py` — orchestrates WhatsApp and Gmail analysis.
+- `src/services/` — WhatsApp analysis, Google Sheets upload, Gmail analysis.
+- `src/config/` — configuration and paths.
+- `src/utils/` — file reading and helpers.
+- `scripts/` — `docker-run.sh`, `deploy.sh`, and other run/deploy scripts.
+- `credentials/` — put Google API credential files here (not committed).
+- `archive/` — legacy Colab prototype kept for reference.
 
-- **Heroku**: `git push heroku main`
-- **Railway**: `railway up`
-- **Google Cloud Run**: `gcloud run deploy`
-- **DigitalOcean**: `doctl apps create`
+## Docker
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed instructions.
+- Build: `docker-compose build`
+- Run: `docker-compose up` (or `docker-compose up -d`)
+- Logs: `docker-compose logs`
+- Shell: `docker-compose exec communication-analyzer bash`
 
-### **Docker Benefits**
-
-- 🐳 **Consistent Environment**: Same setup everywhere
-- 🔒 **Isolated**: No conflicts with system Python
-- 📦 **Portable**: Run on any machine with Docker
-- 🚀 **Easy Deployment**: One command to run
-- 🔧 **Easy Development**: Mount volumes for live code changes
-
-## 🎯 **Module Responsibilities**
-
-### **config.py** - Configuration Management
-- All constants and configuration settings
-- Environment variable support for Docker
-- No more magic strings scattered throughout the code
-
-### **models.py** - Data Models
-- Data classes for structured data handling
-- Enums for type safety
-- Clean separation of data structures
-
-### **whatsapp_analyzer.py** - WhatsApp Analysis
-- Parses WhatsApp chat exports
-- Analyzes message patterns
-- Single responsibility: only handles WhatsApp data
-
-### **google_sheets_manager.py** - Google Sheets Operations
-- Handles authentication with Google Sheets
-- Manages spreadsheet creation and updates
-- Single responsibility: only handles sheets operations
-
-### **gmail_analyzer.py** - Gmail Analysis
-- Authenticates with Gmail API
-- Analyzes email threads
-- Single responsibility: only handles Gmail operations
-
-### **file_manager.py** - File Operations
-- Reads WhatsApp chat files
-- Handles file I/O operations
-- Single responsibility: only handles file operations
-
-### **whatsapp_service.py** - Orchestration
-- Coordinates WhatsApp analysis workflow
-- Integrates analyzer and sheets manager
-- Business logic layer
-
-### **main.py** - Application Entry Point
-- Clean main function
-- Orchestrates entire workflow
-- Docker-aware (handles both Colab and Docker modes)
-
-## 🚀 **How to Use**
-
-### **Option 1: Docker (Recommended)**
-
-```bash
-# Setup
-mkdir -p google-drive credentials
-# Place your files in google-drive/ directory
-
-# Run
-./docker-run.sh
-```
-
-### **Option 2: Local Python**
-
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Set up Google API credentials:
-   - Place your service account JSON file in the specified path
-   - Ensure Gmail authentication files are in place
-
-3. Run the application:
-   ```bash
-   python main.py
-   ```
-
-## 🏗️ **Architecture Benefits**
-
-### **Before (Monolithic)**:
-```
-📄 whatsapp_analyzer_refactored.py (618 lines)
-├── Everything mixed together
-├── Hard to maintain
-├── Difficult to test
-└── Violates Single Responsibility Principle
-```
-
-### **After (Modular + Docker)**:
-```
-📦 Multiple focused modules + Docker
-├── 🎯 Single Responsibility Principle
-├── 🧪 Easy to test individual components
-├── 🔧 Easy to modify specific functionality
-├── 📚 Clear documentation per module
-├── 🐳 Consistent Docker environment
-└── 🚀 Scalable and maintainable
-```
-
-## 🎯 **Key Improvements**
-
-1. **Modularity**: Each module has a single, clear responsibility
-2. **Testability**: Easy to unit test individual components
-3. **Maintainability**: Changes to one module don't affect others
-4. **Readability**: Clear, focused code in each file
-5. **Scalability**: Easy to add new features or modify existing ones
-6. **Documentation**: Each module is self-documenting
-7. **Docker Support**: Consistent, portable environment
-8. **Environment Flexibility**: Works in both Colab and Docker
-
-## 🏴‍☠️ **Pirate Code Standards**
-
-This refactored code follows all the pirate coding standards:
-
-- ✅ **No God Objects**: Each class has one job
-- ✅ **No Spaghetti Code**: Clear, linear flow
-- ✅ **No Magic Strings**: All constants in config
-- ✅ **No Copy-Paste Piracy**: DRY principles followed
-- ✅ **No Silent Error Swallowing**: Proper logging throughout
-- ✅ **No Over-Engineering**: Simple, focused solutions
-- ✅ **No Lava Flows**: Clean, temporary code handling
-- ✅ **No Cargo Cult Coding**: Understanding before implementation
-- ✅ **No Mixed Abstractions**: Clear separation of concerns
-- ✅ **No Big Bang Commits**: Small, focused modules
-- ✅ **Docker Ready**: Portable and consistent
-
-## 🐳 **Docker Commands Reference**
-
-```bash
-# Build the image
-docker-compose build
-
-# Run the container
-docker-compose up
-
-# Run in detached mode
-docker-compose up -d
-
-# Stop the container
-docker-compose down
-
-# View logs
-docker-compose logs
-
-# Run with custom environment variables
-DOCKER_MODE=true LOG_LEVEL=DEBUG docker-compose up
-
-# Access container shell
-docker-compose exec communication-analyzer bash
-```
-
-## 🎉 **Conclusion**
-
-By the grace of the Flying Spaghetti Monster, we've transformed a monolithic 618-line file into a clean, modular, Docker-ready architecture! The code is now:
-
-- **Easier to understand**
-- **Easier to test**
-- **Easier to maintain**
-- **Easier to extend**
-- **Easier to deploy**
-- **Easier to run consistently**
-
-*Fair winds and clean commits to ye, pirate dev!* 🏴‍☠️ 
+See `docs/DEPLOYMENT.md` for deployment options (Heroku, Railway, Cloud Run, etc.).

@@ -13,7 +13,7 @@ from services.whatsapp_analyzer import WhatsAppAnalyzer
 from services.google_sheets_manager import GoogleSheetsManager
 
 class WhatsAppAnalysisService:
-    """Service fdor WhatsApp analysis - Business Logic Layer! 🎯"""
+    """Service for WhatsApp analysis and upload to Google Sheets."""
     
     def __init__(self, config: Config):
         self.config = config
