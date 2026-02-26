@@ -1,0 +1,27 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!env.example
+!env.production.example
+credentials/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+venv/
+.venv/
+
+# Data and logs
+logs/
+data/
+*.log
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+
+# OS
+.DS_Store
